@@ -140,7 +140,7 @@ historyUI.overlay.addEventListener('click',e=>{if(e.target===historyUI.overlay)c
 historyUI.list.addEventListener('click',e=>{const item=e.target.closest('.history-item');if(item)showHistoryGame(item.dataset.id)});
 document.querySelector('#historyBack').onclick=()=>{historyUI.detail.hidden=true;historyUI.list.hidden=false};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!historyUI.overlay.hidden)closeHistory();if(!gateUI.overlay.hidden)closeGate();if(!authUI.overlay.hidden)closeAuth()}});
-addEventListener('resize',()=>{resize();if(!historyUI.detail.hidden&&activeHistory)drawHistoryBoard(activeHistory)});setupLevels();setAccount(null);start();resize();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+addEventListener('resize',()=>{resize();if(!historyUI.detail.hidden&&activeHistory)drawHistoryBoard(activeHistory)});setupLevels();setAccount(null);start();resize();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/service-worker.js',{updateViaCache:'none'}).then(registration=>registration.update()).catch(()=>{});
 
 const ENGINE=String.raw`
 const N=15,E=0,H=1,A=2,WIN=100000000,D=[[1,0],[0,1],[1,1],[1,-1]];
