@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yijian-gomoku-shell-v4';
+const CACHE_NAME = 'yijian-gomoku-shell-v5';
 const APP_SHELL = '/';
 
 self.addEventListener('install', event => {
@@ -22,13 +22,14 @@ self.addEventListener('fetch', event => {
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
-    const savedPage = await cache.match(APP_SHELL);
-    if (savedPage) return savedPage;
     try {
-      const response = await fetch(request);
+      // Always ask Netlify for the latest page while online; only use CacheStorage offline.
+      const response = await fetch(request, { cache: 'no-store' });
       if (response.ok) await cache.put(APP_SHELL, response.clone());
       return response;
     } catch {
+      const savedPage = await cache.match(APP_SHELL);
+      if (savedPage) return savedPage;
       return new Response('此浏览器还没有缓存弈间页面。请在网络恢复后重新打开一次。', {
         status: 503,
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
@@ -36,4 +37,3 @@ self.addEventListener('fetch', event => {
     }
   })());
 });
-
