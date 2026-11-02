@@ -98,6 +98,8 @@ function validCredentials(username, password) {
 
 function validRecord(data) {
   if (!data || !['你获胜', '电脑获胜', '平局'].includes(data.result) || !Array.isArray(data.moves) || data.moves.length < 9 || data.moves.length > 225) return false;
+  if (data.humanColor !== undefined && data.humanColor !== 1 && data.humanColor !== 2) return false;
+  const humanColor = data.humanColor === 2 ? 2 : 1;
   const board = new Uint8Array(225);
   const directions = [[1, 0], [0, 1], [1, 1], [1, -1]];
   const winsAt = (x, y, player) => directions.some(([dx, dy]) => {
@@ -122,7 +124,7 @@ function validRecord(data) {
     board[cell] = player;
     if (winsAt(move.x, move.y, player)) {
       if (i !== data.moves.length - 1) return false;
-      return data.result === (player === 1 ? '你获胜' : '电脑获胜');
+      return data.result === (player === humanColor ? '你获胜' : '电脑获胜');
     }
   }
   return data.moves.length === 225 && data.result === '平局';
@@ -198,7 +200,7 @@ export default async function handler(request, context) {
     if (url.pathname === '/api/history' && method === 'GET') {
       const user = await currentUser(request);
       if (!user) return json({ error: '请先登录' }, 401);
-      return json({ records: (user.records || []).map(r => ({ id: r.id, clientId: r.clientId || null, result: r.result, moves: r.moves, createdAt: r.createdAt })) });
+      return json({ records: (user.records || []).map(r => ({ id: r.id, clientId: r.clientId || null, result: r.result, humanColor: r.humanColor || 1, moves: r.moves, createdAt: r.createdAt })) });
     }
 
     if (url.pathname === '/api/history' && method === 'POST') {
@@ -209,7 +211,7 @@ export default async function handler(request, context) {
       const id = randomUUID();
       const clientId = typeof data.clientId === 'string' && /^[A-Za-z0-9._-]{1,100}$/.test(data.clientId) ? data.clientId : null;
       const moves = data.moves.map(m => ({ x: m.x, y: m.y, p: m.p }));
-      const record = { id, clientId, result: data.result, moves, createdAt: new Date().toISOString() };
+      const record = { id, clientId, result: data.result, humanColor: data.humanColor === 2 ? 2 : 1, moves, createdAt: new Date().toISOString() };
       for (let attempt = 0; attempt < 8; attempt++) {
         const latest = await accounts.getWithMetadata(user.key, { consistency: 'strong', type: 'json' });
         if (!latest?.data || latest.data.id !== user.id) return json({ error: '账号记录不存在，请重新登录' }, 401);
