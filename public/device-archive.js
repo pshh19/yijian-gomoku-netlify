@@ -221,7 +221,8 @@
         const granted=await permission(directory,false);
         if(granted==='granted') {
           if(connectButton)connectButton.textContent='更换共享文件夹';
-          status('共享文件夹已连接 · 打开历史时自动同步','ready');
+          status('共享文件夹已连接 · 正在自动同步','ready');
+          await syncArchive(false);
         } else status('文件夹已记住；点“同步记录”重新允许访问');
       }
     }catch(error){status('无法恢复文件夹授权：'+(error.message||'请重新选择'),'error')}
